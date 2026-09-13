@@ -23,8 +23,16 @@ Goal: Define the SQLite table schema that will store the processed LTB catalogue
 Description: Write a schema (SQL file or migration script) for a table containing only the fields required by MVP 0: file number, order date, issue codes, city, document type, and document URL. Add short comments explaining why each field is needed, per `plan.md` section 7.
 
 ## 5. Build the Catalogue Ingestion Script
-Goal: Load the raw LTB catalogue csv file into the SQLite database using the schema from Task 4.
-Description: Write a standalone script that reads the raw catalogue csv file, for each column  deleting the everything after the / include the /. This basically retains the english names because the columns are writen as english / french for inclusivity. I notice that we have two "rental unit address" columns. Let us merge them together to be one. Usually, what i noice dis when one is Nan the other isn't. Also, we have a "Complex Address" column, I want you to create a new column called Resident Type and an column called Address. If the rentalunit address is availabel and complex address isn't then resident type is "Rental Unit" and Address is the value in Renatl Unit Address else it is Complex. if both are empty then address is empty and rental type too is.  .Rename "ContentDownload URL" column to "View Order" - extracts the required fields,  and inserts them into the SQLite database. The script should be safely re-runnable (e.g. clears and reloads the table) and should log how many records were loaded. 
+Goal: Load the raw LTB catalogue CSV file into the SQLite database using the schema from Task 4.
+Description: Write a standalone script that reads the raw catalogue CSV. Each column header is bilingual, formatted as `English / French`; for every column, keep only the text before the `/` so the English name is retained. Rename the `ContentDownload URL` column to `View Order`.
+
+The raw catalogue has two columns both named "Rental Unit Address" — merge them into a single value. They are not reliably mutually exclusive (one being blank while the other has data); real rows frequently have both populated, with slightly different formatting, so the merge needs to pick a value rather than assume only one is ever present.
+
+Using the merged Rental Unit Address and the separate "Complex Address" column, derive two new fields:
+* **Resident Type** — `"Rental Unit"` if a rental unit address is present and no complex address is given; `"Complex"` if a complex address is given (taking priority when both are present); empty if neither is given.
+* **Address** — the value of whichever address (rental unit or complex) determined the Resident Type above; empty if neither is given.
+
+Extract the required fields and insert them, along with Resident Type and Address, into the SQLite database. The script should be safely re-runnable (e.g. clears and reloads the table) and should log how many records were loaded.
 
 ## 6. Implement Issue Code Normalization in the Data Pipeline
 Goal: Ensure each stored order retains a clean, queryable list of its issue codes.
