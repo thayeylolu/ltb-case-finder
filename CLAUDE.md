@@ -37,6 +37,13 @@ Every task backlog issue must be tagged with a label naming the MVP milestone it
 * Never commit `eda.ipynb` with cell outputs intact — the raw catalogue contains real tenant/landlord/co-op member names and addresses in its rows, and notebook outputs can bake those into the repo even though the source dataset itself is public. It's gitignored; if it needs to be shared, strip outputs first.
 * Raw catalogue CSV columns are bilingual (`English / French`); the ingestion pipeline keeps only the text before the `/`. The `ContentDownload URL` column is renamed to `View Order`.
 
+## Testing
+
+* Every task must include tests, not just the implementation, unless the task is purely documentation (e.g. creating or editing a `.md` file with no functional code change) — those don't need a test.
+* If a task's own description doesn't call out a test explicitly, still add one covering the new behavior before considering the task done.
+* After adding a task's tests, run the **full** suite (`.venv/Scripts/python.exe -m pytest -v`), not just the new file — this catches a new task regressing something an earlier task's tests already covered.
+* Record every full-suite run in `docs/mvp0/test_log.md`: the task it corresponds to, date, result as `passed/collected` (e.g. `19/19`, never a bare count), and which test file(s) changed. This makes it possible to backtrack a later failure to the task that introduced it.
+
 ## Local dev environment
 
 * Python virtual environment: `.venv/` (gitignored). Dependencies in `requirements.txt`.
