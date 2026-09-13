@@ -18,3 +18,4 @@ A run-by-run record of the full test suite (`.venv/Scripts/python.exe -m pytest 
 | 9. Case Filtering Query | 2026-09-13 | `tests/test_case_filtering.py` | 58/58 passed |  |
 | 10. Result Ranking and Limiting Logic | 2026-09-13 | `tests/test_ranking.py` | 64/64 passed |  |
 | 11. POST /search API Endpoint | 2026-09-13 | `tests/test_search_endpoint.py` | 70/70 passed |  |
+| 12. Frontend Issue Selection UI | 2026-09-13 | `tests/test_frontend_issue_selection.py` | 75/75 passed | Also manually verified in Chrome via a local static server: all 14 checkboxes render, styling applied, checkbox toggling confirmed. |

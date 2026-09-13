@@ -1,0 +1,34 @@
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LTB Case Finder</title>
+<link rel="stylesheet" href="styles.css" />
+
+<header>
+  <h1>LTB Case Finder</h1>
+  <p>Find past Landlord and Tenant Board orders related to your rental issue.</p>
+</header>
+
+<main>
+  <fieldset id="issue-selection">
+    <legend>Select one or more issues</legend>
+
+    <label><input type="checkbox" name="issues" value="Rent and Payment" /> Rent and Payment</label>
+    <label><input type="checkbox" name="issues" value="Tenancy Eviction" /> Tenancy Eviction</label>
+    <label><input type="checkbox" name="issues" value="Tenancy Ending" /> Tenancy Ending</label>
+    <label><input type="checkbox" name="issues" value="Notice" /> Notice</label>
+    <label><input type="checkbox" name="issues" value="Breached Conditions" /> Breached Conditions</label>
+    <label><input type="checkbox" name="issues" value="Rent Change" /> Rent Change</label>
+    <label><input type="checkbox" name="issues" value="Maintenance" /> Maintenance</label>
+    <label><input type="checkbox" name="issues" value="Care Home Tenancies" /> Care Home Tenancies</label>
+    <label><input type="checkbox" name="issues" value="Locks and Access" /> Locks and Access</label>
+    <label><input type="checkbox" name="issues" value="Tenancy Agreements" /> Tenancy Agreements</label>
+    <label><input type="checkbox" name="issues" value="Tenant Rights" /> Tenant Rights</label>
+    <label><input type="checkbox" name="issues" value="Suite Meters" /> Suite Meters</label>
+    <label><input type="checkbox" name="issues" value="Co-op Housing" /> Co-op Housing</label>
+    <label><input type="checkbox" name="issues" value="Arrears" /> Arrears</label>
+  </fieldset>
+
+  <button type="button" id="search-button">Search</button>
+
+  <section id="results"></section>
+</main>
