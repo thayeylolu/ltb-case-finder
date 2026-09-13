@@ -13,3 +13,4 @@ A run-by-run record of the full test suite (`.venv/Scripts/python.exe -m pytest 
 | Tooling: automate test log | 2026-09-13 | `scripts/log_test_run.py, tests/test_log_test_run_script.py` | 25/25 passed | Adds the script itself; row appended by running it, not by hand. |
 | 5. Catalogue Ingestion Script | 2026-09-13 | `tests/test_ingestion.py` | 35/35 passed |  |
 | 6. Issue Code Normalization | 2026-09-13 | `tests/test_issue_code_normalization.py` | 44/44 passed |  |
+| 7. FastAPI Application Skeleton | 2026-09-13 | `tests/test_health.py` | 46/46 passed |  |
