@@ -1,5 +1,6 @@
 """Task 12: verifies the static issue-selection page (frontend/index.html)."""
 
+import re
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -87,3 +88,19 @@ def test_stylesheet_is_linked():
 def test_checkboxes_are_listed_in_alphabetical_order():
     parser = _parse_index_html()
     assert parser.checkbox_values == sorted(parser.checkbox_values, key=str.lower)
+
+
+def test_page_is_at_least_15_percent_wider_than_the_original_layout():
+    # User feedback: the results table needed horizontal scrolling at the
+    # original 60rem body width.
+    css = STYLES_CSS_PATH.read_text(encoding="utf-8")
+    match = re.search(r"body\s*{[^}]*max-width:\s*([\d.]+)rem", css, re.DOTALL)
+    assert match, "expected a body max-width in rem"
+    assert float(match.group(1)) >= 60 * 1.15
+
+
+def test_issue_selection_is_a_three_column_grid():
+    # User feedback: sort the issues into a 3-by-5 grid instead of a single
+    # 1-by-14 column.
+    css = STYLES_CSS_PATH.read_text(encoding="utf-8")
+    assert re.search(r"grid-template-columns:\s*repeat\(3", css)

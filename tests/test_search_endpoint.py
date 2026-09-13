@@ -108,3 +108,12 @@ def test_search_with_no_matching_cases_returns_empty_results(client):
     response = client.post("/search", json={"issues": ["Care Home Tenancies"]})
     assert response.status_code == 200
     assert response.json()["results"] == []
+
+
+def test_search_normalizes_city_to_title_case(client):
+    # The raw catalogue's city casing is inconsistent (e.g. all-caps); the
+    # API should always return it in Title Case.
+    response = client.post("/search", json={"issues": ["Tenant Rights"]})
+
+    cities = {r["city"] for r in response.json()["results"]}
+    assert cities == {"Toronto", "London"}

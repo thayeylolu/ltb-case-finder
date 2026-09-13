@@ -46,13 +46,24 @@ function renderResults(results) {
   results.forEach((result) => {
     const row = document.createElement("tr");
 
-    [result.file_number, result.order_date, result.issues.join(" · "), result.city || "", result.document_type].forEach(
-      (text) => {
-        const td = document.createElement("td");
-        td.textContent = text;
-        row.appendChild(td);
-      }
-    );
+    const fileNumberCell = document.createElement("td");
+    fileNumberCell.textContent = result.file_number;
+    row.appendChild(fileNumberCell);
+
+    const orderDateCell = document.createElement("td");
+    orderDateCell.textContent = result.order_date;
+    row.appendChild(orderDateCell);
+
+    const issuesCell = document.createElement("td");
+    issuesCell.className = "issues-cell";
+    issuesCell.textContent = result.issues.join(" · ");
+    row.appendChild(issuesCell);
+
+    [result.city || "", result.document_type].forEach((text) => {
+      const td = document.createElement("td");
+      td.textContent = text;
+      row.appendChild(td);
+    });
 
     const viewOrderCell = document.createElement("td");
     const link = document.createElement("a");

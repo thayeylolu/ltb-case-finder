@@ -45,7 +45,7 @@ def search(
             issues=get_issue_names_for_codes(
                 [code.strip() for code in record["issue_codes"].split(";") if code.strip()]
             ),
-            city=record["city"],
+            city=record["city"].title() if record["city"] else None,
             document_type=record["document_type"],
             view_order_url=record["view_order_url"],
         )

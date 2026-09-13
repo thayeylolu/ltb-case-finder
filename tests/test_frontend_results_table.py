@@ -11,6 +11,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 APP_JS_PATH = PROJECT_ROOT / "frontend" / "app.js"
+STYLES_CSS_PATH = PROJECT_ROOT / "frontend" / "styles.css"
 
 EXPECTED_COLUMNS = ["File Number", "Order Date", "Issues", "City", "Document Type", "View Order"]
 
@@ -45,3 +46,13 @@ def test_view_order_is_a_link_opening_in_a_new_tab():
 def test_search_click_handler_renders_results():
     content = _read_app_js()
     assert "renderResults(" in content
+
+
+def test_issues_cell_is_marked_for_text_wrapping():
+    # User feedback: a long "·"-joined issues list shouldn't force the row
+    # onto one unreadable line.
+    js_content = _read_app_js()
+    assert 'className = "issues-cell"' in js_content or "className = 'issues-cell'" in js_content
+
+    css_content = STYLES_CSS_PATH.read_text(encoding="utf-8")
+    assert re.search(r"\.issues-cell\s*{[^}]*white-space:\s*normal", css_content, re.DOTALL)
