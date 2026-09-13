@@ -4,7 +4,7 @@ Project conventions for LTB Case Finder. Read `docs/mvp0/plan.md` (spec), `docs/
 
 ## Branching
 
-* All MVP 0 work happens on the `mvp0` branch. `main` stays untouched until MVP 0 is complete and ready to be merged in.
+* All MVP 0 work happens on the `mvp0` branch. When a milestone (MVP 0, MVP 1, ...) is complete, merge its branch into `dev` first; `dev` is merged into `main` only when `main` is meant to reflect a production-ready release.
 * GitHub repo: `thayeylolu/ltb-case-finder` (public).
 
 ## Commit messages
