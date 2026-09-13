@@ -88,6 +88,7 @@ def test_search_result_has_expected_fields(client):
         "file_number",
         "order_date",
         "issues",
+        "forms",
         "city",
         "document_type",
         "view_order_url",
@@ -117,3 +118,10 @@ def test_search_normalizes_city_to_title_case(client):
 
     cities = {r["city"] for r in response.json()["results"]}
     assert cities == {"Toronto", "London"}
+
+
+def test_search_returns_the_raw_application_codes_as_forms(client):
+    response = client.post("/search", json={"issues": ["Tenant Rights", "Maintenance"]})
+
+    result_d = next(r for r in response.json()["results"] if r["file_number"] == "LTB-D")
+    assert result_d["forms"] == ["T2", "T6", "L6"]

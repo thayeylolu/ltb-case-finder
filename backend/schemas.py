@@ -13,6 +13,7 @@ class CaseResult(BaseModel):
     file_number: str
     order_date: str
     issues: List[str]
+    forms: List[str]
     city: Optional[str] = None
     document_type: str
     view_order_url: str

@@ -38,18 +38,19 @@ def search(
     any_match_results = find_orders_matching_any_code(connection, codes)
     ranked_results = rank_and_limit_results(all_match_results, any_match_results)
 
-    results = [
-        CaseResult(
-            file_number=record["file_number"],
-            order_date=record["order_date"],
-            issues=get_issue_names_for_codes(
-                [code.strip() for code in record["issue_codes"].split(";") if code.strip()]
-            ),
-            city=record["city"].title() if record["city"] else None,
-            document_type=record["document_type"],
-            view_order_url=record["view_order_url"],
+    results = []
+    for record in ranked_results:
+        codes = [code.strip() for code in record["issue_codes"].split(";") if code.strip()]
+        results.append(
+            CaseResult(
+                file_number=record["file_number"],
+                order_date=record["order_date"],
+                issues=get_issue_names_for_codes(codes),
+                forms=codes,
+                city=record["city"].title() if record["city"] else None,
+                document_type=record["document_type"],
+                view_order_url=record["view_order_url"],
+            )
         )
-        for record in ranked_results
-    ]
 
     return SearchResponse(results=results)

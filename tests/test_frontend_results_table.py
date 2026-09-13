@@ -13,7 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 APP_JS_PATH = PROJECT_ROOT / "frontend" / "app.js"
 STYLES_CSS_PATH = PROJECT_ROOT / "frontend" / "styles.css"
 
-EXPECTED_COLUMNS = ["File Number", "Order Date", "Issues", "City", "Document Type", "View Order"]
+EXPECTED_COLUMNS = ["File Number", "Order Date", "Issues", "Forms", "City", "Document Type", "View Order"]
 
 
 def _read_app_js() -> str:
@@ -34,6 +34,14 @@ def test_table_has_every_required_column_header():
 def test_issues_are_joined_with_the_planned_separator():
     content = _read_app_js()
     assert 'join(" · ")' in content or "join(' · ')" in content
+
+
+def test_forms_column_uses_the_same_separator_as_issues_not_semicolons():
+    # User feedback: the "Forms" column should use the "·" notation from
+    # Issues instead of the raw catalogue's ";" delimiter.
+    content = _read_app_js()
+    assert "result.forms" in content
+    assert re.search(r"result\.forms\.join\([\"']\s*·\s*[\"']\)", content)
 
 
 def test_view_order_is_a_link_opening_in_a_new_tab():

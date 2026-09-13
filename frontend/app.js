@@ -20,7 +20,7 @@ async function searchCases(issues) {
   return response.json();
 }
 
-const RESULT_COLUMNS = ["File Number", "Order Date", "Issues", "City", "Document Type", "View Order"];
+const RESULT_COLUMNS = ["File Number", "Order Date", "Issues", "Forms", "City", "Document Type", "View Order"];
 
 function renderResults(results) {
   const container = document.getElementById("results");
@@ -58,6 +58,11 @@ function renderResults(results) {
     issuesCell.className = "issues-cell";
     issuesCell.textContent = result.issues.join(" · ");
     row.appendChild(issuesCell);
+
+    const formsCell = document.createElement("td");
+    formsCell.className = "issues-cell";
+    formsCell.textContent = result.forms.join(" · ");
+    row.appendChild(formsCell);
 
     [result.city || "", result.document_type].forEach((text) => {
       const td = document.createElement("td");
