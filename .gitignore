@@ -13,6 +13,7 @@ eda.ipynb
 # Data (regenerated locally — see docs/mvp0/tasks.md Task 2)
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/README.md
 *.db
 
 # OS
