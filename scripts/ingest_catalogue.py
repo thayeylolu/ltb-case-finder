@@ -1,12 +1,13 @@
-"""Task 5: loads the raw LTB catalogue CSV into the SQLite orders table.
+"""Task 5/6: loads the raw LTB catalogue CSV into the SQLite orders table,
+and normalizes each row's issue codes into the order_issue_codes join table.
 
 Usage:
     .venv/Scripts/python.exe scripts/ingest_catalogue.py
     .venv/Scripts/python.exe scripts/ingest_catalogue.py --csv path/to.csv --db path/to.db
 
-Safely re-runnable: each run drops and recreates the `orders` table (via
-data/schema.sql) before reloading it, so the CSV is always the source of
-truth for the current contents of the database.
+Safely re-runnable: each run drops and recreates the `orders` and
+`order_issue_codes` tables (via data/schema.sql) before reloading them, so
+the CSV is always the source of truth for the current contents of the DB.
 """
 
 import argparse
@@ -16,7 +17,7 @@ import re
 import sqlite3
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 RAW_DATA_DIR = PROJECT_ROOT / "data" / "raw"
@@ -52,6 +53,21 @@ def extract_view_order_url(raw_value: str) -> str:
     raw_value = raw_value.strip()
     match = VIEW_ORDER_FORMULA_PATTERN.match(raw_value)
     return match.group(1) if match else raw_value
+
+
+def split_issue_codes(raw_codes: str) -> List[str]:
+    """Parses a raw "T1;T2;T3" field into ["T1", "T2", "T3"] for storage in
+    the order_issue_codes join table (Task 6).
+
+    Strips whitespace around each code and drops duplicates within the same
+    row (the catalogue has rows like "L1;L1;L1") while preserving order.
+    """
+    codes: List[str] = []
+    for part in raw_codes.split(";"):
+        code = part.strip()
+        if code and code not in codes:
+            codes.append(code)
+    return codes
 
 
 def derive_city(address: str) -> Optional[str]:
@@ -109,11 +125,18 @@ def load_catalogue(csv_path: Path, db_path: Path) -> int:
     connection = sqlite3.connect(db_path)
     try:
         connection.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
-        connection.executemany(
-            "INSERT INTO orders (file_number, order_date, issue_codes, document_type, city, view_order_url) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            rows_to_insert,
-        )
+        cursor = connection.cursor()
+        for file_number, order_date, issue_codes, document_type, city, view_order_url in rows_to_insert:
+            cursor.execute(
+                "INSERT INTO orders (file_number, order_date, issue_codes, document_type, city, view_order_url) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (file_number, order_date, issue_codes, document_type, city, view_order_url),
+            )
+            order_id = cursor.lastrowid
+            cursor.executemany(
+                "INSERT INTO order_issue_codes (order_id, code) VALUES (?, ?)",
+                [(order_id, code) for code in split_issue_codes(issue_codes)],
+            )
         connection.commit()
     finally:
         connection.close()

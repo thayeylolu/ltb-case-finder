@@ -4,6 +4,7 @@
 -- no landlord/tenant/co-op member names or addresses are carried over from the
 -- raw catalogue, even though the source CSV includes them.
 
+DROP TABLE IF EXISTS order_issue_codes;
 DROP TABLE IF EXISTS orders;
 
 CREATE TABLE orders (
@@ -23,9 +24,10 @@ CREATE TABLE orders (
     order_date TEXT NOT NULL,
 
     -- LTB application/issue codes for this order (raw column
-    -- "Applications/Requêtes"), e.g. "T1;T2;T3". Kept as a single
-    -- semicolon-delimited field here; Task 6 defines how this gets parsed
-    -- into a queryable form (join table or otherwise) for filtering by code.
+    -- "Applications/Requêtes"), e.g. "T1;T2;T3". Kept as-is here for display;
+    -- Task 6 additionally explodes this into the order_issue_codes table
+    -- below so filtering by code doesn't require a LIKE '%T1%' scan (which
+    -- would also wrongly match "T10", "T11", ...).
     issue_codes TEXT NOT NULL,
 
     -- "Document Type" (raw column "Document Type/Type de document"), e.g.
@@ -51,3 +53,19 @@ CREATE INDEX idx_orders_order_date ON orders (order_date);
 -- Lets a user's file-number lookup (or future case-level grouping across an
 -- order's Order/ExParte Order/Review Order rows) avoid a full table scan.
 CREATE INDEX idx_orders_file_number ON orders (file_number);
+
+-- Task 6: normalized issue codes, one row per (order, code) pair, e.g. the
+-- orders.issue_codes value "T1;T2;T3" becomes three rows here. This is what
+-- Task 9's ALL-match / ANY-match filtering queries against.
+CREATE TABLE order_issue_codes (
+    order_id INTEGER NOT NULL REFERENCES orders (id),
+    code TEXT NOT NULL
+);
+
+-- Task 9 filters by code (WHERE code IN (...)), so this is the index that
+-- matters for search performance.
+CREATE INDEX idx_order_issue_codes_code ON order_issue_codes (code);
+
+-- Lets a lookup go the other way — from an order back to all of its codes —
+-- without a full table scan.
+CREATE INDEX idx_order_issue_codes_order_id ON order_issue_codes (order_id);
