@@ -10,6 +10,20 @@ header p {
   color: #444;
 }
 
+.disclaimer {
+  background-color: #fff8e1;
+  border: 1px solid #e6c200;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #664d00;
+}
+
+#no-results-message {
+  font-style: italic;
+  color: #444;
+}
+
 #issue-selection {
   border: 1px solid #ccc;
   border-radius: 4px;

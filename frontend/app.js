@@ -27,6 +27,10 @@ function renderResults(results) {
   container.innerHTML = "";
 
   if (results.length === 0) {
+    const message = document.createElement("p");
+    message.id = "no-results-message";
+    message.textContent = "No matching orders found.";
+    container.appendChild(message);
     return;
   }
 
