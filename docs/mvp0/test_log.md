@@ -14,3 +14,4 @@ A run-by-run record of the full test suite (`.venv/Scripts/python.exe -m pytest 
 | 5. Catalogue Ingestion Script | 2026-09-13 | `tests/test_ingestion.py` | 35/35 passed |  |
 | 6. Issue Code Normalization | 2026-09-13 | `tests/test_issue_code_normalization.py` | 44/44 passed |  |
 | 7. FastAPI Application Skeleton | 2026-09-13 | `tests/test_health.py` | 46/46 passed |  |
+| 8. Issue-to-Code Lookup Service | 2026-09-13 | `tests/test_taxonomy_lookup.py` | 51/51 passed |  |
