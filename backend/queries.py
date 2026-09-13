@@ -21,13 +21,12 @@ ORDER_COLUMNS = (
     "document_type",
     "city",
     "resident_type",
-    "address",
     "view_order_url",
 )
 
 ORDER_SELECT_COLUMNS = (
     "o.id, o.file_number, o.order_date, o.issue_codes, o.document_type, o.city, "
-    "o.resident_type, o.address, o.view_order_url"
+    "o.resident_type, o.view_order_url"
 )
 
 

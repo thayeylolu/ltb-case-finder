@@ -27,7 +27,6 @@ const RESULT_COLUMNS = [
   "Forms",
   "City",
   "Resident Type",
-  "Address",
   "Document Type",
   "View Order",
 ];
@@ -78,7 +77,7 @@ function renderResults(results) {
     formsCell.textContent = result.forms.join(" · ");
     row.appendChild(formsCell);
 
-    [result.city || "", result.resident_type || "", result.address || "", result.document_type].forEach((text) => {
+    [result.city || "", result.resident_type || "", result.document_type].forEach((text) => {
       const td = document.createElement("td");
       td.textContent = text;
       row.appendChild(td);

@@ -20,7 +20,6 @@ EXPECTED_COLUMNS = [
     "Forms",
     "City",
     "Resident Type",
-    "Address",
     "Document Type",
     "View Order",
 ]
@@ -60,10 +59,10 @@ def test_resident_type_must_be_rendered_in_the_results_table():
     assert "result.resident_type" in content
 
 
-def test_address_column_is_pulled_from_the_address_field():
+def test_address_is_not_rendered_in_the_results_table():
     content = _read_app_js()
-    assert '"Address"' in content
-    assert "result.address" in content
+    assert '"Address"' not in content
+    assert "result.address" not in content
 
 
 def test_view_order_is_a_link_opening_in_a_new_tab():

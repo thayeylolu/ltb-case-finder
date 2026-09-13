@@ -16,7 +16,6 @@ class CaseResult(BaseModel):
     forms: List[str]
     city: Optional[str] = None
     resident_type: str
-    address: str
     document_type: str
     view_order_url: str
 

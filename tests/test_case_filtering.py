@@ -93,7 +93,6 @@ def test_result_records_include_expected_fields(seeded_conn):
             "document_type": "Order",
             "city": "LONDON",
             "resident_type": "",
-            "address": "",
             "view_order_url": "https://example.com/e.pdf",
         }
     ]

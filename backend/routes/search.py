@@ -49,7 +49,6 @@ def search(
                 forms=codes,
                 city=record["city"].title() if record["city"] else None,
                 resident_type=record["resident_type"],
-                address=record["address"],
                 document_type=record["document_type"],
                 view_order_url=record["view_order_url"],
             )

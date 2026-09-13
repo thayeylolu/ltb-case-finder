@@ -102,7 +102,6 @@ def test_search_result_has_expected_fields(client):
         "forms",
         "city",
         "resident_type",
-        "address",
         "document_type",
         "view_order_url",
     }
@@ -140,19 +139,24 @@ def test_search_returns_the_raw_application_codes_as_forms(client):
     assert result_d["forms"] == ["T2", "T6", "L6"]
 
 
-def test_search_returns_resident_type_and_address_from_the_db(client):
+def test_search_returns_resident_type_from_the_db(client):
     response = client.post("/search", json={"issues": ["Tenant Rights", "Maintenance"]})
     results = {r["file_number"]: r for r in response.json()["results"]}
 
     assert results["LTB-D"]["resident_type"] == "Rental Unit"
-    assert results["LTB-D"]["address"] == "1 KING ST, TORONTO, ON M5H1A1"
     assert results["LTB-B"]["resident_type"] == "Complex"
-    assert results["LTB-B"]["address"] == "50 BAY ST, TORONTO, ON M5J2N8"
 
 
-def test_search_returns_empty_resident_type_and_address_when_neither_was_in_the_catalogue(client):
+def test_search_returns_empty_resident_type_when_neither_address_was_in_the_catalogue(client):
     response = client.post("/search", json={"issues": ["Tenant Rights", "Maintenance"]})
     result_a = next(r for r in response.json()["results"] if r["file_number"] == "LTB-A")
 
     assert result_a["resident_type"] == ""
-    assert result_a["address"] == ""
+
+
+def test_search_does_not_return_address(client):
+    # Resident Type is shown in the results table, but Address is not.
+    response = client.post("/search", json={"issues": ["Tenant Rights"]})
+    result = response.json()["results"][0]
+
+    assert "address" not in result
