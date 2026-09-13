@@ -72,4 +72,4 @@ Description: Write an automated test using FastAPI's test client against a seede
 
 ## 17. Write Project Setup and Run Instructions
 Goal: Document how to install dependencies, load data, and run the application locally.
-Description: Update the README.md soit give a projec overiew like a product manager.. summaries what the project is all about. you may want to look at the docs/mvp0/plan.md for that. Then it the README.md covering environment setup, how to run the ingestion pipeline (Tasks 3-6), how to start the FastAPI server, and how to open the frontend in a browser. A new developer should be able to get the app running without asking questions.
+Description: Update the README.md soit give a projec overiew like a product manager.. summaries what the project is all about. you may want to look at the docs/mvp0/plan.md for that. Then it the README.md covering environment setup, how to run the ingestion pipeline (Tasks 2, 4-6), how to start the FastAPI server, and how to open the frontend in a browser. A new developer should be able to get the app running without asking questions.

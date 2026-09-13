@@ -120,9 +120,3 @@ Consistent with `plan.md` section 11 — these have no place in the MVP 0 archit
 * No auth/session layer, no user data store
 * No frontend build pipeline or JS framework
 * The frontend never queries SQLite directly — FastAPI is the only path to the data
-
----
-
-## 5. Open Question
-
-`docs/mvp0/tasks.md` Task 17 references "Tasks 3-6" as "the ingestion pipeline" — after the task reorder, the ingestion pipeline is actually Tasks 2, 4, 5, 6 (Task 3, taxonomy mapping, is used by the pipeline's normalization step but isn't itself a pipeline step). Worth a quick fix in `tasks.md` when convenient.
