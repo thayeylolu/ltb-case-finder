@@ -20,6 +20,56 @@ async function searchCases(issues) {
   return response.json();
 }
 
+const RESULT_COLUMNS = ["File Number", "Order Date", "Issues", "City", "Document Type", "View Order"];
+
+function renderResults(results) {
+  const container = document.getElementById("results");
+  container.innerHTML = "";
+
+  if (results.length === 0) {
+    return;
+  }
+
+  const table = document.createElement("table");
+
+  const headerRow = document.createElement("tr");
+  RESULT_COLUMNS.forEach((label) => {
+    const th = document.createElement("th");
+    th.textContent = label;
+    headerRow.appendChild(th);
+  });
+  const thead = document.createElement("thead");
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  results.forEach((result) => {
+    const row = document.createElement("tr");
+
+    [result.file_number, result.order_date, result.issues.join(" · "), result.city || "", result.document_type].forEach(
+      (text) => {
+        const td = document.createElement("td");
+        td.textContent = text;
+        row.appendChild(td);
+      }
+    );
+
+    const viewOrderCell = document.createElement("td");
+    const link = document.createElement("a");
+    link.href = result.view_order_url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "View Order";
+    viewOrderCell.appendChild(link);
+    row.appendChild(viewOrderCell);
+
+    tbody.appendChild(row);
+  });
+  table.appendChild(tbody);
+
+  container.appendChild(table);
+}
+
 async function handleSearchClick() {
   const issues = getSelectedIssues();
 
@@ -30,11 +80,7 @@ async function handleSearchClick() {
 
   try {
     const data = await searchCases(issues);
-    if (data.results.length === 0) {
-      console.log("No matching orders found.");
-    } else {
-      console.log("Search results:", data.results);
-    }
+    renderResults(data.results);
   } catch (error) {
     console.error(error);
   }
