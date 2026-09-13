@@ -40,15 +40,20 @@ The user selects at least one issue from a predefined list.
 
 The initial issue categories are:
 
-* Rent and Payment Collection
-* Eviction and Tenancy Ending
-* Tenant Rights
-* Maintenance and Housing Conditions
-* Rent Increases and Reductions
-* Tenancy Agreements and Occupancy
+* Rent and Payment
+* Tenancy Eviction
+* Tenancy Ending
+* Notice
+* Breached Conditions
+* Rent Change
+* Maintenance
 * Care Home Tenancies
 * Locks and Access
+* Tenancy Agreements
+* Tenant Rights
 * Suite Meters
+* Co-op Housing
+* Arrears
 
 Multiple issues can be selected.
 
@@ -81,7 +86,7 @@ The `Issues` field displays human readable issue names rather than application c
 
 For example:
 
-`Maintenance and Housing Conditions · Tenant Rights · Rent and Payment Collection`
+`Maintenance · Tenant Rights · Rent and Payment`
 
 rather than:
 
@@ -103,7 +108,7 @@ When the user selects multiple issues, cases containing **all selected issues** 
 
 For example, if the user selects:
 
-`Maintenance and Housing Conditions + Tenant Rights`
+`Maintenance + Tenant Rights`
 
 the system first retrieves cases containing both corresponding issue codes.
 

@@ -24,15 +24,20 @@ Ontario tenants dealing with a rental issue (unpaid maintenance, an eviction not
 
 The interface presents these user-facing categories (backed by official LTB application codes internally — see [`config/issue_taxonomy.json`](config/issue_taxonomy.json)):
 
-* Rent and Payment Collection
-* Eviction and Tenancy Ending
-* Rent Increases and Reductions
-* Maintenance and Housing Conditions
-* Tenant Rights
-* Tenancy Agreements and Occupancy
+* Rent and Payment
+* Tenancy Eviction
+* Tenancy Ending
+* Notice
+* Breached Conditions
+* Rent Change
+* Maintenance
 * Care Home Tenancies
 * Locks and Access
+* Tenancy Agreements
+* Tenant Rights
 * Suite Meters
+* Co-op Housing
+* Arrears
 
 ## Results
 
@@ -41,7 +46,7 @@ Each result displays:
 | File Number | Order Date | Issues | City | Document Type | View Order |
 | ----------- | ---------- | ------ | ---- | -------------- | ---------- |
 
-The `Issues` column shows human-readable category names (e.g. `Maintenance and Housing Conditions · Tenant Rights`) rather than raw application codes — the codes are used internally for filtering and ranking only.
+The `Issues` column shows human-readable category names (e.g. `Maintenance · Tenant Rights`) rather than raw application codes — the codes are used internally for filtering and ranking only.
 
 ## Data Source
 

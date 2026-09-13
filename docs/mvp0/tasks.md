@@ -15,7 +15,7 @@ Description: Download the current LTB Order Catalogue (CSV or JSON) from the Ont
 
 ## 3. Define the Issue Taxonomy Mapping
 Goal: Create the authoritative mapping between user-facing issue names and official LTB application codes.
-Description: Produce a config file (e.g. JSON) listing the 9 MVP 0 issue categories (for instance Maintenance and Housing Conditions, Tenant Rights) and their corresponding official LTB application codes. Document the source used to determine each mapping is from the LTB website list of categories/applications.
+Description: Produce a config file (e.g. JSON) listing the 14 MVP 0 issue categories (for instance Maintenance, Tenant Rights) and their corresponding official LTB application codes. Document the source used to determine each mapping is from the LTB website list of categories/applications.
 
 
 ## 4. Design the SQLite Database Schema
@@ -52,7 +52,7 @@ Description: Add a `POST /search` endpoint to the FastAPI app that accepts a lis
 
 ## 12. Build the Frontend Issue Selection UI
 Goal: Create the HTML/CSS page allowing a tenant to select one or more issues.
-Description: Build a static HTML page with a multi-select control (e.g. checkboxes) for the 9 MVP 0 issue categories and a "Search" button, styled with basic CSS per `plan.md` section 9. No JavaScript logic is required beyond capturing the selected values.
+Description: Build a static HTML page with a multi-select control (e.g. checkboxes) for the 14 MVP 0 issue categories and a "Search" button, styled with basic CSS per `plan.md` section 9. No JavaScript logic is required beyond capturing the selected values.
 
 ## 13. Implement Frontend Search Submission and API Integration
 Goal: Wire the frontend "Search" button to call the backend `/search` endpoint.
