@@ -21,6 +21,10 @@ When a commit completes a task from `docs/mvp0/tasks.md`, reference the matching
 
 Keep unrelated changes in separate commits (e.g. doc fixes and a task implementation are two commits, not one).
 
+## GitHub issues
+
+Every task backlog issue must be tagged with a label naming the MVP milestone it belongs to (e.g. `mvp0`). When starting a new milestone's task backlog (MVP 1, MVP 2, ...), create the matching label first (`gh label create "mvp1" ...`) and apply it to every issue created for that milestone's tasks.
+
 ## Source of truth locations
 
 * **Issue taxonomy** (user-facing category name ↔ official LTB application code): `config/issue_taxonomy.json`. This is authoritative — don't hardcode category/code mappings elsewhere.
