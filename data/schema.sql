@@ -35,10 +35,23 @@ CREATE TABLE orders (
     -- user knows what kind of document they're viewing (plan.md section 9).
     document_type TEXT NOT NULL,
 
-    -- City the rental unit/complex is located in, derived from the raw
-    -- address columns during ingestion (the catalogue has no dedicated city
-    -- column). Required for the results table (plan.md section 9).
+    -- City the rental unit/complex is located in, derived from `address`
+    -- below during ingestion (the catalogue has no dedicated city column).
+    -- Required for the results table (plan.md section 9).
     city TEXT,
+
+    -- Whether `address` below came from the raw "Rental Unit Address" or
+    -- "Complex Address" column (Task 5 rework): "Rental Unit" when a rental
+    -- unit address is present and no complex address is given, "Complex"
+    -- when a complex address is given (taking priority when both are
+    -- present), or "" when neither raw column had a value.
+    resident_type TEXT NOT NULL DEFAULT '',
+
+    -- The merged, single address value described above — the raw catalogue
+    -- has two separately-named "Rental Unit Address" columns (only one of
+    -- which is ever populated per row) plus a "Complex Address" column, and
+    -- this is whichever of those actually had a value. "" when none did.
+    address TEXT NOT NULL DEFAULT '',
 
     -- Link to the original order document (raw column "ContentDownload
     -- URL/URL de téléchargement du contenu", renamed "View Order" per Task 5).

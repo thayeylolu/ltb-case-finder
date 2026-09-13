@@ -55,6 +55,38 @@ def extract_view_order_url(raw_value: str) -> str:
     return match.group(1) if match else raw_value
 
 
+def merge_rental_unit_address(primary: str, secondary: str) -> str:
+    """Coalesces the raw catalogue's two same-named "Rental Unit Address"
+    columns into one value.
+
+    Only one of the two is ever populated for a given row, and which one
+    varies row to row, so this can't just always prefer one column over the
+    other — it takes whichever one is non-empty.
+    """
+    primary = (primary or "").strip()
+    secondary = (secondary or "").strip()
+    return primary or secondary
+
+
+def derive_resident_type_and_address(rental_unit_address: str, complex_address: str):
+    """Derives the Task 5 "Resident Type" and "Address" fields from the
+    merged rental unit address and the raw complex address.
+
+    A rental unit address means the resident is in an individual rental
+    unit; otherwise, if a complex address is given, they're in a complex
+    (which also wins when both are somehow present); if neither is given,
+    both fields are empty.
+    """
+    rental_unit_address = (rental_unit_address or "").strip()
+    complex_address = (complex_address or "").strip()
+
+    if not rental_unit_address and not complex_address:
+        return "", ""
+    if rental_unit_address and not complex_address:
+        return "Rental Unit", rental_unit_address
+    return "Complex", complex_address
+
+
 def split_issue_codes(raw_codes: str) -> List[str]:
     """Parses a raw "T1;T2;T3" field into ["T1", "T2", "T3"] for storage in
     the order_issue_codes join table (Task 6).
@@ -88,10 +120,27 @@ def derive_city(address: str) -> Optional[str]:
     return parts[-2] or None
 
 
+def _dedupe_header(cleaned_header: List[str]) -> List[str]:
+    """Disambiguates repeated column names (e.g. the raw catalogue's two
+    "Rental Unit Address" columns) so csv.DictReader doesn't silently drop
+    one of them — it builds each row's dict via zip(fieldnames, values),
+    which keeps only the last value for a name used more than once.
+
+    The first occurrence of a name keeps it as-is; later ones get " 2",
+    " 3", etc. appended.
+    """
+    counts: dict = {}
+    deduped = []
+    for name in cleaned_header:
+        counts[name] = counts.get(name, 0) + 1
+        deduped.append(name if counts[name] == 1 else f"{name} {counts[name]}")
+    return deduped
+
+
 def _read_rows(csv_path: Path):
     with csv_path.open(encoding="utf-8-sig", newline="") as f:
         raw_header = next(csv.reader(f))
-        cleaned_header = [clean_header(h) for h in raw_header]
+        cleaned_header = _dedupe_header([clean_header(h) for h in raw_header])
         reader = csv.DictReader(f, fieldnames=cleaned_header)
         yield from reader
 
@@ -118,19 +167,28 @@ def load_catalogue(csv_path: Path, db_path: Path) -> int:
             continue
 
         view_order_url = extract_view_order_url(view_order_raw)
-        city = derive_city(row.get("Rental Unit Address") or "")
+        rental_unit_address = merge_rental_unit_address(
+            row.get("Rental Unit Address"), row.get("Rental Unit Address 2")
+        )
+        resident_type, address = derive_resident_type_and_address(
+            rental_unit_address, row.get("Complex Address") or ""
+        )
+        city = derive_city(address)
 
-        rows_to_insert.append((file_number, order_date, issue_codes, document_type, city, view_order_url))
+        rows_to_insert.append(
+            (file_number, order_date, issue_codes, document_type, city, resident_type, address, view_order_url)
+        )
 
     connection = sqlite3.connect(db_path)
     try:
         connection.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
         cursor = connection.cursor()
-        for file_number, order_date, issue_codes, document_type, city, view_order_url in rows_to_insert:
+        for file_number, order_date, issue_codes, document_type, city, resident_type, address, view_order_url in rows_to_insert:
             cursor.execute(
-                "INSERT INTO orders (file_number, order_date, issue_codes, document_type, city, view_order_url) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
-                (file_number, order_date, issue_codes, document_type, city, view_order_url),
+                "INSERT INTO orders "
+                "(file_number, order_date, issue_codes, document_type, city, resident_type, address, view_order_url) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (file_number, order_date, issue_codes, document_type, city, resident_type, address, view_order_url),
             )
             order_id = cursor.lastrowid
             cursor.executemany(

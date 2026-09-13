@@ -16,6 +16,8 @@ EXPECTED_COLUMNS = {
     "issue_codes": ("TEXT", 1),
     "document_type": ("TEXT", 1),
     "city": ("TEXT", 0),
+    "resident_type": ("TEXT", 1),
+    "address": ("TEXT", 1),
     "view_order_url": ("TEXT", 1),
 }
 

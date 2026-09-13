@@ -8,18 +8,22 @@ import pytest
 from scripts.ingest_catalogue import (
     clean_header,
     derive_city,
+    derive_resident_type_and_address,
     extract_view_order_url,
     load_catalogue,
+    merge_rental_unit_address,
 )
 
 # Mirrors the real raw catalogue header shape: bilingual "English / French"
-# names, and a duplicate "Rental Unit Address" column pair where the first
-# is often blank and the second (later) one carries the real address.
+# names, a "Complex Address" column, and a duplicate "Rental Unit Address"
+# column pair straddling it — only one of the pair is ever populated per
+# row, and it isn't always the same one.
 RAW_HEADER = [
     "_id",
     "File Number/Numéro de dossier",
     "Applications/Requêtes",
     "Rental Unit Address//Adresse du logement locatif",
+    "Complex Address/Adresse du complexe",
     "Rental Unit Address/Adresse du logement locatif",
     "Document Type/Type de document",
     "Order Date/Date de l'ordonnance",
@@ -33,6 +37,20 @@ def _write_csv(path, rows):
         writer.writerow(RAW_HEADER)
         writer.writerows(rows)
     return path
+
+
+def _row(file_number, issue_codes, rental_1, complex_address, rental_2, order_date, doc_id):
+    return [
+        doc_id,
+        file_number,
+        issue_codes,
+        rental_1,
+        complex_address,
+        rental_2,
+        "Order",
+        order_date,
+        f'=HYPERLINK("https://example.com/{doc_id}.pdf","View file")',
+    ]
 
 
 def test_clean_header_keeps_only_text_before_slash():
@@ -65,67 +83,140 @@ def test_derive_city_returns_none_for_empty_address():
     assert derive_city("") is None
 
 
-def test_load_catalogue_inserts_expected_rows_using_the_data_bearing_duplicate_column(tmp_path):
+def test_merge_rental_unit_address_uses_the_populated_column_when_it_is_first():
+    assert merge_rental_unit_address("8-48 CAROGA CRT, HAMILTON, ON L9C7M4", "") == "8-48 CAROGA CRT, HAMILTON, ON L9C7M4"
+
+
+def test_merge_rental_unit_address_uses_the_populated_column_when_it_is_second():
+    assert merge_rental_unit_address("", "8-48 CAROGA CRT, HAMILTON, ON L9C7M4") == "8-48 CAROGA CRT, HAMILTON, ON L9C7M4"
+
+
+def test_merge_rental_unit_address_returns_empty_when_both_are_empty():
+    assert merge_rental_unit_address("", "") == ""
+
+
+def test_derive_resident_type_and_address_from_rental_unit_only():
+    assert derive_resident_type_and_address("8-48 CAROGA CRT, HAMILTON, ON L9C7M4", "") == (
+        "Rental Unit",
+        "8-48 CAROGA CRT, HAMILTON, ON L9C7M4",
+    )
+
+
+def test_derive_resident_type_and_address_from_complex_only():
+    assert derive_resident_type_and_address("", "100 MAIN ST, LONDON, ON N6J4X9") == (
+        "Complex",
+        "100 MAIN ST, LONDON, ON N6J4X9",
+    )
+
+
+def test_derive_resident_type_and_address_prefers_complex_when_both_are_present():
+    assert derive_resident_type_and_address(
+        "8-48 CAROGA CRT, HAMILTON, ON L9C7M4", "100 MAIN ST, LONDON, ON N6J4X9"
+    ) == ("Complex", "100 MAIN ST, LONDON, ON N6J4X9")
+
+
+def test_derive_resident_type_and_address_returns_empty_when_neither_is_given():
+    assert derive_resident_type_and_address("", "") == ("", "")
+
+
+def _loaded_row(db_path):
+    conn = sqlite3.connect(db_path)
+    row = conn.execute(
+        "SELECT file_number, order_date, issue_codes, document_type, city, resident_type, address, "
+        "view_order_url FROM orders"
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def test_load_catalogue_uses_the_first_rental_unit_address_column_when_the_second_is_blank(tmp_path):
+    # Regression test: this used to fail because both duplicate "Rental Unit
+    # Address" columns cleaned to the same name, and csv.DictReader silently
+    # kept only the *last* column's value — discarding the first even when
+    # it was the one that actually had data.
     csv_path = _write_csv(
         tmp_path / "catalogue.csv",
-        [
-            [
-                "1",
-                "LTB-C-001226-26",
-                "T1;T2;T3",
-                "",  # blank duplicate "Rental Unit Address" column
-                "8-48 CAROGA CRT, HAMILTON, ON L9C7M4",
-                "Order",
-                "2026-04-01",
-                '=HYPERLINK("https://example.com/doc1.pdf","View file")',
-            ],
-        ],
+        [_row("LTB-C-001226-26", "T1;T2;T3", "8-48 CAROGA CRT, HAMILTON, ON L9C7M4", "", "", "2026-04-01", "1")],
     )
     db_path = tmp_path / "ltb.db"
 
     loaded = load_catalogue(csv_path, db_path)
     assert loaded == 1
-
-    conn = sqlite3.connect(db_path)
-    row = conn.execute(
-        "SELECT file_number, order_date, issue_codes, document_type, city, view_order_url FROM orders"
-    ).fetchone()
-    conn.close()
-
-    assert row == (
+    assert _loaded_row(db_path) == (
         "LTB-C-001226-26",
         "2026-04-01",
         "T1;T2;T3",
         "Order",
         "HAMILTON",
-        "https://example.com/doc1.pdf",
+        "Rental Unit",
+        "8-48 CAROGA CRT, HAMILTON, ON L9C7M4",
+        "https://example.com/1.pdf",
     )
+
+
+def test_load_catalogue_uses_the_second_rental_unit_address_column_when_the_first_is_blank(tmp_path):
+    csv_path = _write_csv(
+        tmp_path / "catalogue.csv",
+        [_row("LTB-C-001226-26", "T1;T2;T3", "", "", "8-48 CAROGA CRT, HAMILTON, ON L9C7M4", "2026-04-01", "1")],
+    )
+    db_path = tmp_path / "ltb.db"
+
+    loaded = load_catalogue(csv_path, db_path)
+    assert loaded == 1
+    assert _loaded_row(db_path) == (
+        "LTB-C-001226-26",
+        "2026-04-01",
+        "T1;T2;T3",
+        "Order",
+        "HAMILTON",
+        "Rental Unit",
+        "8-48 CAROGA CRT, HAMILTON, ON L9C7M4",
+        "https://example.com/1.pdf",
+    )
+
+
+def test_load_catalogue_uses_complex_address_when_no_rental_unit_address_is_given(tmp_path):
+    csv_path = _write_csv(
+        tmp_path / "catalogue.csv",
+        [_row("LTB-C-000798-26", "C2", "", "100 MAIN ST, LONDON, ON N6J4X9", "", "2026-01-02", "2")],
+    )
+    db_path = tmp_path / "ltb.db"
+
+    loaded = load_catalogue(csv_path, db_path)
+    assert loaded == 1
+    assert _loaded_row(db_path) == (
+        "LTB-C-000798-26",
+        "2026-01-02",
+        "C2",
+        "Order",
+        "LONDON",
+        "Complex",
+        "100 MAIN ST, LONDON, ON N6J4X9",
+        "https://example.com/2.pdf",
+    )
+
+
+def test_load_catalogue_leaves_resident_type_and_address_empty_when_neither_is_given(tmp_path):
+    csv_path = _write_csv(
+        tmp_path / "catalogue.csv",
+        [_row("LTB-C-000799-26", "C2", "", "", "", "2026-01-03", "3")],
+    )
+    db_path = tmp_path / "ltb.db"
+
+    loaded = load_catalogue(csv_path, db_path)
+    assert loaded == 1
+    row = _loaded_row(db_path)
+    assert row[4] is None  # city
+    assert row[5] == ""  # resident_type
+    assert row[6] == ""  # address
 
 
 def test_load_catalogue_skips_rows_missing_a_required_field(tmp_path):
     csv_path = _write_csv(
         tmp_path / "catalogue.csv",
         [
-            [
-                "1",
-                "",  # missing File Number
-                "T1",
-                "",
-                "123 MAIN ST, LONDON, ON N6J4X9",
-                "Order",
-                "2026-01-01",
-                '=HYPERLINK("https://example.com/doc1.pdf","View file")',
-            ],
-            [
-                "2",
-                "LTB-C-000798-26",
-                "C2",
-                "",
-                "123 MAIN ST, LONDON, ON N6J4X9",
-                "Order",
-                "2026-01-02",
-                '=HYPERLINK("https://example.com/doc2.pdf","View file")',
-            ],
+            _row("", "T1", "", "", "123 MAIN ST, LONDON, ON N6J4X9", "2026-01-01", "1"),  # missing File Number
+            _row("LTB-C-000798-26", "C2", "", "", "123 MAIN ST, LONDON, ON N6J4X9", "2026-01-02", "2"),
         ],
     )
     db_path = tmp_path / "ltb.db"
@@ -142,18 +233,7 @@ def test_load_catalogue_skips_rows_missing_a_required_field(tmp_path):
 def test_load_catalogue_is_safely_rerunnable(tmp_path):
     csv_path = _write_csv(
         tmp_path / "catalogue.csv",
-        [
-            [
-                "1",
-                "LTB-C-001226-26",
-                "C4",
-                "",
-                "8-48 CAROGA CRT, HAMILTON, ON L9C7M4",
-                "Order",
-                "2026-04-01",
-                '=HYPERLINK("https://example.com/doc1.pdf","View file")',
-            ],
-        ],
+        [_row("LTB-C-001226-26", "C4", "", "", "8-48 CAROGA CRT, HAMILTON, ON L9C7M4", "2026-04-01", "1")],
     )
     db_path = tmp_path / "ltb.db"
 
