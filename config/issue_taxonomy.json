@@ -1,0 +1,104 @@
+
+{    "forms": [
+        {
+            "code": "L1",
+            "name": "Application to evict a tenant for non-payment of rent and to collect rent the tenant owes",
+            "categories": ["Rent and Payment Collection", "Eviction and Tenancy Ending"]
+        },
+        {
+            "code": "L2",
+            "name": "Application to End a Tenancy and Evict a Tenant or Collect Money",
+            "categories": ["Eviction and Tenancy Ending", "Rent and Payment Collection"]
+        },
+        {
+            "code": "L3",
+            "name": "Application to End a Tenancy – Tenant Gave Notice or Agreed to Terminate the Tenancy",
+            "categories": ["Eviction and Tenancy Ending"]
+        },
+        {
+            "code": "L4",
+            "name": "Application to End a Tenancy and Evict a Tenant – Tenant Failed to Meet Conditions of a Settlement or Order",
+            "categories": ["Eviction and Tenancy Ending"]
+        },
+        {
+            "code": "L5",
+            "name": "Application for a Rent Increase Above the Guideline",
+            "categories": ["Rent Increases and Reductions"]
+        },
+        {
+            "code": "L6",
+            "name": "Application for Review of a Work Order about Provincial Maintenance Standards",
+            "categories": ["Maintenance and Housing Conditions"]
+        },
+        {
+            "code": "L7",
+            "name": "Application to Transfer a Care Home Tenant",
+            "categories": ["Care Home Tenancies"]
+        },
+        {
+            "code": "L8",
+            "name": "Application Because the Tenant Changed the Locks",
+            "categories": ["Locks and Access"]
+        },
+        {
+            "code": "L9",
+            "name": "Application to Collect Rent the Tenant Owes",
+            "categories": ["Rent and Payment Collection"]
+        },
+        {
+            "code": "L10",
+            "name": "Application to Collect Money a Former Tenant Owes",
+            "categories": ["Rent and Payment Collection"]
+        },
+        {
+            "code": "A1",
+            "name": "Application about Whether the Act Applies",
+            "categories": ["Tenancy Agreements and Occupancy"]
+        },
+        {
+            "code": "A2",
+            "name": "Application about a Sublet or an Assignment",
+            "categories": ["Tenancy Agreements and Occupancy"]
+        },
+        {
+            "code": "A4",
+            "name": "Application to Vary the Amount of a Rent Reduction",
+            "categories": ["Rent Increases and Reductions"]
+        },
+        {
+            "code": "T1",
+            "name": "Tenant Application for a Rebate",
+            "categories": ["Rent and Payment Collection"]
+        },
+        {
+            "code": "T2",
+            "name": "Application about Tenant Rights",
+            "categories": ["Tenant Rights"]
+        },
+        {
+            "code": "T3",
+            "name": "Tenant Application for a Rent Reduction",
+            "categories": ["Rent Increases and Reductions"]
+        },
+        {
+            "code": "T4",
+            "name": "Tenant Application – Landlord did not Comply with an Agreement to Increase Rent Above the Guideline",
+            "categories": ["Rent Increases and Reductions"]
+        },
+        {
+            "code": "T5",
+            "name": "Tenant Application – Landlord Gave a Notice of Termination in Bad Faith",
+            "categories": ["Eviction and Tenancy Ending"]
+        },
+        {
+            "code": "T6",
+            "name": "Tenant Application about Maintenance",
+            "categories": ["Maintenance and Housing Conditions"]
+        },
+        {
+            "code": "T7",
+            "name": "Tenant Application about Suite Meters",
+            "categories": ["Suite Meters"]
+        }
+    ]
+}
