@@ -16,3 +16,4 @@ A run-by-run record of the full test suite (`.venv/Scripts/python.exe -m pytest 
 | 7. FastAPI Application Skeleton | 2026-09-13 | `tests/test_health.py` | 46/46 passed |  |
 | 8. Issue-to-Code Lookup Service | 2026-09-13 | `tests/test_taxonomy_lookup.py` | 51/51 passed |  |
 | 9. Case Filtering Query | 2026-09-13 | `tests/test_case_filtering.py` | 58/58 passed |  |
+| 10. Result Ranking and Limiting Logic | 2026-09-13 | `tests/test_ranking.py` | 64/64 passed |  |
