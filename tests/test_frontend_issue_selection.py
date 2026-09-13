@@ -82,3 +82,8 @@ def test_page_has_a_search_button():
 def test_stylesheet_is_linked():
     content = INDEX_HTML_PATH.read_text(encoding="utf-8")
     assert 'href="styles.css"' in content
+
+
+def test_checkboxes_are_listed_in_alphabetical_order():
+    parser = _parse_index_html()
+    assert parser.checkbox_values == sorted(parser.checkbox_values, key=str.lower)
