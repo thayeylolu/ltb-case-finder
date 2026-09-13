@@ -55,17 +55,23 @@ def extract_view_order_url(raw_value: str) -> str:
     return match.group(1) if match else raw_value
 
 
-def merge_rental_unit_address(primary: str, secondary: str) -> str:
+def merge_rental_unit_address(preferred: str, fallback: str) -> str:
     """Coalesces the raw catalogue's two same-named "Rental Unit Address"
     columns into one value.
 
-    Only one of the two is ever populated for a given row, and which one
-    varies row to row, so this can't just always prefer one column over the
-    other — it takes whichever one is non-empty.
+    They're populated together on almost every row (not mutually exclusive,
+    despite appearances), but with different formatting — the first column
+    breaks the unit number and postal code out into their own comma-
+    separated segments (e.g. "Upper Unit, 203 Pellatt Avenue, Northyork,
+    ON, M9N2P5"), which throws off derive_city's "STREET, CITY, PROVINCE
+    POSTALCODE" parsing, while the second is a single clean address (e.g.
+    "Upper Unit-203 Pellatt Avenue, Northyork, ON M9N2P5"). The second
+    column is also the only one ever populated on its own, so callers
+    should pass it as `preferred` and the first as `fallback`.
     """
-    primary = (primary or "").strip()
-    secondary = (secondary or "").strip()
-    return primary or secondary
+    preferred = (preferred or "").strip()
+    fallback = (fallback or "").strip()
+    return preferred or fallback
 
 
 def derive_resident_type_and_address(rental_unit_address: str, complex_address: str):
@@ -102,12 +108,16 @@ def split_issue_codes(raw_codes: str) -> List[str]:
     return codes
 
 
-def derive_city(address: str) -> Optional[str]:
-    """Derives the city from a "STREET, CITY, PROVINCE POSTALCODE" address.
+PROVINCE_TOKENS = {"on", "ontario"}
 
-    The catalogue has no dedicated city column, so this is parsed out of the
-    rental unit address. Returns None when the address doesn't have enough
-    comma-separated segments to contain a city (e.g. "Multiple Rental Units").
+
+def derive_city(address: str) -> Optional[str]:
+    """Derives the city from an address, which the catalogue formats either
+    as "STREET, CITY, PROVINCE POSTALCODE" (the merged Rental Unit Address —
+    3 comma-separated segments) or "STREET, CITY, PROVINCE, POSTALCODE" (the
+    Complex Address — province and postal code get their own segment, 4
+    total). Returns None when the address doesn't have enough segments to
+    contain a city (e.g. "Multiple Rental Units").
     """
     address = address.strip()
     if not address:
@@ -116,6 +126,9 @@ def derive_city(address: str) -> Optional[str]:
     parts = [part.strip() for part in address.split(",")]
     if len(parts) < 2:
         return None
+
+    if len(parts) >= 3 and parts[-2].lower() in PROVINCE_TOKENS:
+        return parts[-3] or None
 
     return parts[-2] or None
 
@@ -168,7 +181,7 @@ def load_catalogue(csv_path: Path, db_path: Path) -> int:
 
         view_order_url = extract_view_order_url(view_order_raw)
         rental_unit_address = merge_rental_unit_address(
-            row.get("Rental Unit Address"), row.get("Rental Unit Address 2")
+            row.get("Rental Unit Address 2"), row.get("Rental Unit Address")
         )
         resident_type, address = derive_resident_type_and_address(
             rental_unit_address, row.get("Complex Address") or ""

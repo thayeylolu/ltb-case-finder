@@ -83,12 +83,34 @@ def test_derive_city_returns_none_for_empty_address():
     assert derive_city("") is None
 
 
-def test_merge_rental_unit_address_uses_the_populated_column_when_it_is_first():
+def test_derive_city_from_a_complex_address_with_province_in_its_own_segment():
+    # Complex Address values put the province and postal code in separate
+    # comma segments ("STREET, CITY, PROVINCE, POSTALCODE"), unlike the
+    # merged rental unit address's "STREET, CITY, PROVINCE POSTALCODE".
+    assert derive_city("815 Kennedy Road, Scarborough, Ontario, M1K 2E3") == "Scarborough"
+
+
+def test_merge_rental_unit_address_prefers_the_preferred_column_when_populated():
     assert merge_rental_unit_address("8-48 CAROGA CRT, HAMILTON, ON L9C7M4", "") == "8-48 CAROGA CRT, HAMILTON, ON L9C7M4"
 
 
-def test_merge_rental_unit_address_uses_the_populated_column_when_it_is_second():
+def test_merge_rental_unit_address_falls_back_when_preferred_is_blank():
     assert merge_rental_unit_address("", "8-48 CAROGA CRT, HAMILTON, ON L9C7M4") == "8-48 CAROGA CRT, HAMILTON, ON L9C7M4"
+
+
+def test_merge_rental_unit_address_prefers_the_preferred_column_even_when_both_are_populated():
+    # Real catalogue rows have both duplicate columns populated on almost
+    # every row, with the first ("fallback" here) using a less parseable
+    # format — e.g. an extra comma before the postal code — than the
+    # second ("preferred"). Confirms `preferred` always wins, not just
+    # when `fallback` happens to be blank.
+    assert (
+        merge_rental_unit_address(
+            "Upper Unit-203 Pellatt Avenue, Northyork, ON M9N2P5",
+            "Upper Unit, 203 Pellatt Avenue, Northyork, ON, M9N2P5",
+        )
+        == "Upper Unit-203 Pellatt Avenue, Northyork, ON M9N2P5"
+    )
 
 
 def test_merge_rental_unit_address_returns_empty_when_both_are_empty():
@@ -175,6 +197,36 @@ def test_load_catalogue_uses_the_second_rental_unit_address_column_when_the_firs
     )
 
 
+def test_load_catalogue_prefers_the_second_rental_unit_address_column_when_both_are_populated(tmp_path):
+    # Regression test for the real catalogue shape: both duplicate columns
+    # are populated on almost every row, and the first one's extra comma
+    # before the postal code (e.g. "..., Northyork, ON, M9N2P5") breaks
+    # derive_city's parsing if it's the one used — the second column's
+    # single-comma format (e.g. "..., Northyork, ON M9N2P5") is the one
+    # that must win.
+    csv_path = _write_csv(
+        tmp_path / "catalogue.csv",
+        [
+            _row(
+                "LTB-L-000003-26",
+                "L1",
+                "Upper Unit, 203 Pellatt Avenue, Northyork, ON, M9N2P5",
+                "",
+                "Upper Unit-203 Pellatt Avenue, Northyork, ON M9N2P5",
+                "2026-01-05",
+                "5",
+            )
+        ],
+    )
+    db_path = tmp_path / "ltb.db"
+
+    loaded = load_catalogue(csv_path, db_path)
+    assert loaded == 1
+    row = _loaded_row(db_path)
+    assert row[4] == "Northyork"  # city
+    assert row[6] == "Upper Unit-203 Pellatt Avenue, Northyork, ON M9N2P5"  # address
+
+
 def test_load_catalogue_uses_complex_address_when_no_rental_unit_address_is_given(tmp_path):
     csv_path = _write_csv(
         tmp_path / "catalogue.csv",
@@ -194,6 +246,23 @@ def test_load_catalogue_uses_complex_address_when_no_rental_unit_address_is_give
         "100 MAIN ST, LONDON, ON N6J4X9",
         "https://example.com/2.pdf",
     )
+
+
+def test_load_catalogue_derives_city_from_a_complex_address_correctly(tmp_path):
+    # Regression test: the raw Complex Address column always has the
+    # 4-segment "STREET, CITY, PROVINCE, POSTALCODE" shape, which used to
+    # make derive_city return "Ontario" instead of the actual city.
+    csv_path = _write_csv(
+        tmp_path / "catalogue.csv",
+        [_row("LTB-C-000900-26", "C2", "", "815 Kennedy Road, Scarborough, Ontario, M1K 2E3", "", "2026-01-04", "4")],
+    )
+    db_path = tmp_path / "ltb.db"
+
+    loaded = load_catalogue(csv_path, db_path)
+    assert loaded == 1
+    row = _loaded_row(db_path)
+    assert row[4] == "Scarborough"  # city
+    assert row[5] == "Complex"  # resident_type
 
 
 def test_load_catalogue_leaves_resident_type_and_address_empty_when_neither_is_given(tmp_path):
