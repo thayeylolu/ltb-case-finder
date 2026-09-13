@@ -13,9 +13,22 @@ from typing import Dict, List
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "ltb.db"
 
-ORDER_COLUMNS = ("id", "file_number", "order_date", "issue_codes", "document_type", "city", "view_order_url")
+ORDER_COLUMNS = (
+    "id",
+    "file_number",
+    "order_date",
+    "issue_codes",
+    "document_type",
+    "city",
+    "resident_type",
+    "address",
+    "view_order_url",
+)
 
-ORDER_SELECT_COLUMNS = "o.id, o.file_number, o.order_date, o.issue_codes, o.document_type, o.city, o.view_order_url"
+ORDER_SELECT_COLUMNS = (
+    "o.id, o.file_number, o.order_date, o.issue_codes, o.document_type, o.city, "
+    "o.resident_type, o.address, o.view_order_url"
+)
 
 
 def get_connection(db_path: Path = DEFAULT_DB_PATH) -> sqlite3.Connection:

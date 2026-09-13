@@ -17,11 +17,21 @@ SCHEMA_PATH = PROJECT_ROOT / "data" / "schema.sql"
 # LTB-D matches every code for "Tenant Rights" + "Maintenance" (T2, L6, T6);
 # LTB-A and LTB-B match only some of them; LTB-C is unrelated (L5).
 SEED_ORDERS = [
-    # file_number, order_date, issue_codes, document_type, city, view_order_url, codes
-    ("LTB-D", "2026-08-01", "T2;T6;L6", "Order", "TORONTO", "https://example.com/d.pdf", ["T2", "T6", "L6"]),
-    ("LTB-B", "2026-06-01", "T2", "Order", "TORONTO", "https://example.com/b.pdf", ["T2"]),
-    ("LTB-A", "2026-05-01", "T2;T6", "Order", "LONDON", "https://example.com/a.pdf", ["T2", "T6"]),
-    ("LTB-C", "2026-01-01", "L5", "Order", "OTTAWA", "https://example.com/c.pdf", ["L5"]),
+    # file_number, order_date, issue_codes, document_type, city, resident_type, address, view_order_url, codes
+    (
+        "LTB-D",
+        "2026-08-01",
+        "T2;T6;L6",
+        "Order",
+        "TORONTO",
+        "Rental Unit",
+        "1 KING ST, TORONTO, ON M5H1A1",
+        "https://example.com/d.pdf",
+        ["T2", "T6", "L6"],
+    ),
+    ("LTB-B", "2026-06-01", "T2", "Order", "TORONTO", "Complex", "50 BAY ST, TORONTO, ON M5J2N8", "https://example.com/b.pdf", ["T2"]),
+    ("LTB-A", "2026-05-01", "T2;T6", "Order", "LONDON", "", "", "https://example.com/a.pdf", ["T2", "T6"]),
+    ("LTB-C", "2026-01-01", "L5", "Order", "OTTAWA", "", "", "https://example.com/c.pdf", ["L5"]),
 ]
 
 
@@ -31,11 +41,12 @@ def seeded_db_path(tmp_path):
     conn = sqlite3.connect(db_path)
     conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
 
-    for file_number, order_date, issue_codes, document_type, city, view_order_url, codes in SEED_ORDERS:
+    for file_number, order_date, issue_codes, document_type, city, resident_type, address, view_order_url, codes in SEED_ORDERS:
         cursor = conn.execute(
-            "INSERT INTO orders (file_number, order_date, issue_codes, document_type, city, view_order_url) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (file_number, order_date, issue_codes, document_type, city, view_order_url),
+            "INSERT INTO orders "
+            "(file_number, order_date, issue_codes, document_type, city, resident_type, address, view_order_url) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (file_number, order_date, issue_codes, document_type, city, resident_type, address, view_order_url),
         )
         order_id = cursor.lastrowid
         conn.executemany(
@@ -90,6 +101,8 @@ def test_search_result_has_expected_fields(client):
         "issues",
         "forms",
         "city",
+        "resident_type",
+        "address",
         "document_type",
         "view_order_url",
     }
@@ -125,3 +138,21 @@ def test_search_returns_the_raw_application_codes_as_forms(client):
 
     result_d = next(r for r in response.json()["results"] if r["file_number"] == "LTB-D")
     assert result_d["forms"] == ["T2", "T6", "L6"]
+
+
+def test_search_returns_resident_type_and_address_from_the_db(client):
+    response = client.post("/search", json={"issues": ["Tenant Rights", "Maintenance"]})
+    results = {r["file_number"]: r for r in response.json()["results"]}
+
+    assert results["LTB-D"]["resident_type"] == "Rental Unit"
+    assert results["LTB-D"]["address"] == "1 KING ST, TORONTO, ON M5H1A1"
+    assert results["LTB-B"]["resident_type"] == "Complex"
+    assert results["LTB-B"]["address"] == "50 BAY ST, TORONTO, ON M5J2N8"
+
+
+def test_search_returns_empty_resident_type_and_address_when_neither_was_in_the_catalogue(client):
+    response = client.post("/search", json={"issues": ["Tenant Rights", "Maintenance"]})
+    result_a = next(r for r in response.json()["results"] if r["file_number"] == "LTB-A")
+
+    assert result_a["resident_type"] == ""
+    assert result_a["address"] == ""

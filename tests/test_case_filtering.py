@@ -92,6 +92,8 @@ def test_result_records_include_expected_fields(seeded_conn):
             "issue_codes": "T1;T2;T3",
             "document_type": "Order",
             "city": "LONDON",
+            "resident_type": "",
+            "address": "",
             "view_order_url": "https://example.com/e.pdf",
         }
     ]

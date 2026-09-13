@@ -13,7 +13,17 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 APP_JS_PATH = PROJECT_ROOT / "frontend" / "app.js"
 STYLES_CSS_PATH = PROJECT_ROOT / "frontend" / "styles.css"
 
-EXPECTED_COLUMNS = ["File Number", "Order Date", "Issues", "Forms", "City", "Document Type", "View Order"]
+EXPECTED_COLUMNS = [
+    "File Number",
+    "Order Date",
+    "Issues",
+    "Forms",
+    "City",
+    "Resident Type",
+    "Address",
+    "Document Type",
+    "View Order",
+]
 
 
 def _read_app_js() -> str:
@@ -42,6 +52,18 @@ def test_forms_column_uses_the_same_separator_as_issues_not_semicolons():
     content = _read_app_js()
     assert "result.forms" in content
     assert re.search(r"result\.forms\.join\([\"']\s*·\s*[\"']\)", content)
+
+
+def test_resident_type_must_be_rendered_in_the_results_table():
+    content = _read_app_js()
+    assert '"Resident Type"' in content
+    assert "result.resident_type" in content
+
+
+def test_address_column_is_pulled_from_the_address_field():
+    content = _read_app_js()
+    assert '"Address"' in content
+    assert "result.address" in content
 
 
 def test_view_order_is_a_link_opening_in_a_new_tab():
