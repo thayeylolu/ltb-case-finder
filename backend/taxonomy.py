@@ -1,31 +1,36 @@
-"""Task 8: translates user-facing issue names into LTB application codes,
-using the mapping from config/issue_taxonomy.json (Task 3).
+"""Task 8/11: translates between user-facing issue names and LTB
+application codes, using the mapping from config/issue_taxonomy.json
+(Task 3).
 """
 
 import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TAXONOMY_PATH = PROJECT_ROOT / "config" / "issue_taxonomy.json"
 
 
-def _load_issue_to_codes() -> Dict[str, List[str]]:
-    """Inverts Task 3's code->categories mapping into issue name->codes,
-    e.g. "Maintenance" -> ["L6", "T6"]."""
+def _load_taxonomy_maps() -> Tuple[Dict[str, List[str]], Dict[str, List[str]]]:
+    """Builds both directions of Task 3's code<->categories mapping:
+    issue name -> codes (e.g. "Maintenance" -> ["L6", "T6"]) and
+    code -> issue names (e.g. "L1" -> ["Rent and Payment", "Tenancy Eviction"]).
+    """
     with TAXONOMY_PATH.open(encoding="utf-8") as f:
         taxonomy = json.load(f)
 
     issue_to_codes: Dict[str, List[str]] = {}
+    code_to_issues: Dict[str, List[str]] = {}
     for form in taxonomy["forms"]:
+        code_to_issues[form["code"]] = form["categories"]
         for category in form["categories"]:
             issue_to_codes.setdefault(category, []).append(form["code"])
-    return issue_to_codes
+    return issue_to_codes, code_to_issues
 
 
 # Loaded once at import time — config/issue_taxonomy.json only changes when
 # the taxonomy itself is edited, not per-request.
-ISSUE_TO_CODES = _load_issue_to_codes()
+ISSUE_TO_CODES, CODE_TO_ISSUES = _load_taxonomy_maps()
 
 
 def get_codes_for_issues(issue_names: List[str]) -> List[str]:
@@ -43,3 +48,18 @@ def get_codes_for_issues(issue_names: List[str]) -> List[str]:
             if code not in codes:
                 codes.append(code)
     return codes
+
+
+def get_issue_names_for_codes(codes: List[str]) -> List[str]:
+    """Reverse of get_codes_for_issues: maps an order's own LTB application
+    codes back to human-readable issue names for display (plan.md section
+    3.2, Step 3), de-duplicated and in first-seen order. Unknown codes are
+    skipped rather than raised on, since they come from catalogue data, not
+    user input.
+    """
+    names: List[str] = []
+    for code in codes:
+        for name in CODE_TO_ISSUES.get(code, []):
+            if name not in names:
+                names.append(name)
+    return names

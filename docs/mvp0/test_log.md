@@ -17,3 +17,4 @@ A run-by-run record of the full test suite (`.venv/Scripts/python.exe -m pytest 
 | 8. Issue-to-Code Lookup Service | 2026-09-13 | `tests/test_taxonomy_lookup.py` | 51/51 passed |  |
 | 9. Case Filtering Query | 2026-09-13 | `tests/test_case_filtering.py` | 58/58 passed |  |
 | 10. Result Ranking and Limiting Logic | 2026-09-13 | `tests/test_ranking.py` | 64/64 passed |  |
+| 11. POST /search API Endpoint | 2026-09-13 | `tests/test_search_endpoint.py` | 70/70 passed |  |
