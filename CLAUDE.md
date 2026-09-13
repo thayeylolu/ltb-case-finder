@@ -41,8 +41,7 @@ Every task backlog issue must be tagged with a label naming the MVP milestone it
 
 * Every task must include tests, not just the implementation, unless the task is purely documentation (e.g. creating or editing a `.md` file with no functional code change) — those don't need a test.
 * If a task's own description doesn't call out a test explicitly, still add one covering the new behavior before considering the task done.
-* After adding a task's tests, run the **full** suite (`.venv/Scripts/python.exe -m pytest -v`), not just the new file — this catches a new task regressing something an earlier task's tests already covered.
-* Record every full-suite run in `docs/mvp0/test_log.md`: the task it corresponds to, date, result as `passed/collected` (e.g. `19/19`, never a bare count), and which test file(s) changed. This makes it possible to backtrack a later failure to the task that introduced it.
+* After adding a task's tests, log the run with `.venv/Scripts/python.exe scripts/log_test_run.py --task "<task>" --files "<test file(s)>"` instead of running pytest and editing `docs/mvp0/test_log.md` by hand. The script runs the **full** suite (not just the new file — this catches a new task regressing something an earlier task's tests already covered), parses the pytest summary, and appends a row itself, so the logged `passed/collected` count (e.g. `19/19`) always matches what actually ran. Use `--dry-run` to preview the row without writing it, and `--notes` for anything worth calling out.
 
 ## Local dev environment
 

@@ -10,3 +10,4 @@ A run-by-run record of the full test suite (`.venv/Scripts/python.exe -m pytest 
 | 2. Acquire Catalogue Snapshot | 2026-09-13 | `tests/test_data_acquisition.py` | 6/6 passed | Verified at commit `11c0f6e` (checked out and re-run). |
 | 3. Issue Taxonomy Mapping | 2026-09-13 | `tests/test_issue_taxonomy.py` | 13/13 passed | Verified at commit `7bcbff0` (checked out and re-run). |
 | 4. SQLite Database Schema | 2026-09-13 | `tests/test_schema.py` | 19/19 passed | Run on working tree before commit; no failures, errors, or skips. |
+| Tooling: automate test log | 2026-09-13 | `scripts/log_test_run.py, tests/test_log_test_run_script.py` | 25/25 passed | Adds the script itself; row appended by running it, not by hand. |
